@@ -7,7 +7,7 @@ from scipy import ndimage
 
 from keras.models import load_model
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import base64
 
 
@@ -27,23 +27,26 @@ def shift(img,sx,sy):
     return shifted
 
 
-def analyze_number(uri):
+def analyze_number(file_type, data):
 
-    #If we want / have a local image path instead of a data uri
-    #gray = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    # local image path
+    if file_type == '1':
+        gray = cv2.imread(data, cv2.IMREAD_GRAYSCALE)
+    # else uri split the data
+    else:
+        f = open(data, "r")
+        encoded_data = f.read().split(',')[1]
     
-    encoded_data = uri.split(',')[1]
+        #deprecated
+        #nparr = np.fromstring(base64.b64decode(encoded_data), np.uint8)
+        
+        nparr = np.frombuffer(base64.b64decode(encoded_data), np.uint8)    
     
-    #deprecated
-    #nparr = np.fromstring(base64.b64decode(encoded_data), np.uint8)
+        #if we want to see plot of images
+        # regular_img = cv2.imdecode(nparr)
+        # plt.imshow(regular_img)
     
-    nparr = np.frombuffer(base64.b64decode(encoded_data), np.uint8)    
-    
-    #if we want to see plot of images
-    regular_img = cv2.imdecode(nparr)
-    plt.imshow(regular_img)
-    
-    gray = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
+        gray = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
     
     #plt.imshow(gray)
     #plt.show()
@@ -108,6 +111,15 @@ def analyze_number(uri):
     
     
 if __name__ == '__main__':
-    # Can change to add image upload as well but for now we are using uri
-    uri = input('Input the data uri of the image you are analyzing: ')
-    final_num = analyze_number(uri)
+    data = ''
+    file_type = ''
+    while file_type != 'q':
+        file_type = input('Type 1 for local image file or 2 for inputting a data uri provided in a text file (press q to quit): ')
+        if file_type == '1':
+            data = input('Input the file path of the image you are analyzing: ')
+        elif file_type == '2':
+            data = input('Input the text file containing the data uri of the image you are analyzing: ')
+        else:
+            print('Not a valid input.')
+            continue
+        analyze_number(file_type, data)
